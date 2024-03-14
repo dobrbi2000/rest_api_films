@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/dobrbi2000/web/server_db2_handler/models"
+	"github.com/dobrbi2000/rest_api_films/models"
 	"github.com/gorilla/mux"
 )
 

@@ -1,6 +1,6 @@
 package api
 
-import "github.com/dobrbi2000/web/server_db2_handler/storage"
+import "github.com/dobrbi2000/rest_api_films/storage"
 
 //main instance
 

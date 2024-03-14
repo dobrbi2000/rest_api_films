@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"github.com/dobrbi2000/web/rest_api_films/storage"
+	"github.com/dobrbi2000/rest_api_films/storage"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )

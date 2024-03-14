@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/dobrbi2000/web/server_db2_handler/models"
+	"github.com/dobrbi2000/rest_api_films/models"
 )
 
 type UserRepository struct {
