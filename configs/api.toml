@@ -1,0 +1,6 @@
+[web-server]
+bind_addr = ":8080"
+logger_level = "debug"
+
+[storage]
+database_url = "host=localhost port=5432 user=admin password=admin dbname=restapi sslmode=disable"
