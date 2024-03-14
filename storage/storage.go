@@ -11,9 +11,10 @@ import (
 type Storage struct {
 	config *Config
 	//database filedescriptor
-	db                *sql.DB
-	userRepository    *UserRepository
-	articleRepository *ArticleRepository
+	db              *sql.DB
+	userRepository  *UserRepository
+	actorRepository *ActorRepository
+	filmRepository  *FilmRepository
 }
 
 func New(config *Config) *Storage {
@@ -52,13 +53,24 @@ func (s *Storage) User() *UserRepository {
 	return s.userRepository
 }
 
-func (s *Storage) Article() *ArticleRepository {
-	if s.articleRepository != nil {
-		return s.articleRepository
+func (s *Storage) Actor() *ActorRepository {
+	if s.actorRepository != nil {
+		return s.actorRepository
 	}
-	s.articleRepository = &ArticleRepository{
+	s.actorRepository = &ActorRepository{
 		storage: s,
 	}
 	fmt.Println("initialize article storage:", s)
-	return s.articleRepository
+	return s.actorRepository
+}
+
+func (s *Storage) Film() *FilmRepository {
+	if s.filmRepository != nil {
+		return s.filmRepository
+	}
+	s.filmRepository = &FilmRepository{
+		storage: s,
+	}
+	fmt.Println("initialize article storage:", s)
+	return s.filmRepository
 }

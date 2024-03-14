@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/BurntSushi/toml"
-	"github.com/dobrbi2000/web/server_db2_handler/internal/app/api"
+	"github.com/dobrbi2000/rest_api_films/internal/app/api"
 )
 
 var (

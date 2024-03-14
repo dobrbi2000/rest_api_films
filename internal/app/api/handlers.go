@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/dobrbi2000/rest_api_films/internal/app/api/middleware"
 	"github.com/dobrbi2000/rest_api_films/models"
+	"github.com/form3tech-oss/jwt-go"
 	"github.com/gorilla/mux"
 )
 
@@ -22,16 +25,15 @@ func initHeader(writer http.ResponseWriter) {
 	writer.Header().Set("Content-Type", "application/json")
 }
 
-func (api *API) GetAllArticles(writer http.ResponseWriter, req *http.Request) {
+func (api *API) GetAllFilms(writer http.ResponseWriter, req *http.Request) {
 	//инилизация хедера
 	initHeader(writer)
 	//логируем момент начала обработки запроса
-	api.logger.Info("Get all Articles GET /api/v1/articles")
-	//r := storage.NewArticleRepository(/**/)
+	api.logger.Info("Get all Films GET /api/v1/films")
 
-	articles, err := api.storage.Article().SelectAll()
+	films, err := api.storage.Film().SelectAll()
 	if err != nil {
-		api.logger.Info("Error while Articles.SelectAll:", err)
+		api.logger.Info("Error while Films.SelectAll:", err)
 		msg := Message{
 			StatusCode: 500,
 			Message:    "Database unavailible. Try again later",
@@ -42,14 +44,14 @@ func (api *API) GetAllArticles(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 	writer.WriteHeader(200)
-	json.NewEncoder(writer).Encode(articles)
+	json.NewEncoder(writer).Encode(films)
 }
 
-func (api *API) PostArticle(writer http.ResponseWriter, req *http.Request) {
+func (api *API) PostFilms(writer http.ResponseWriter, req *http.Request) {
 	initHeader(writer)
-	api.logger.Info("Post article POST /api/v1/articles")
-	var article models.Article
-	err := json.NewDecoder(req.Body).Decode(&article)
+	api.logger.Info("Post film POST /api/v1/films")
+	var film models.Film
+	err := json.NewDecoder(req.Body).Decode(&film)
 	if err != nil {
 		api.logger.Info("Invalid JSON file recieved from client")
 		msg := Message{
@@ -61,9 +63,9 @@ func (api *API) PostArticle(writer http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(writer).Encode(msg)
 		return
 	}
-	a, err := api.storage.Article().Create(&article)
+	f, err := api.storage.Film().Create(&film)
 	if err != nil {
-		api.logger.Info("Some error wit creating new article:", err)
+		api.logger.Info("Some error with creating new film:", err)
 		msg := Message{
 			StatusCode: 500,
 			Message:    "We have some problem with database",
@@ -74,13 +76,13 @@ func (api *API) PostArticle(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 	writer.WriteHeader(201)
-	json.NewEncoder(writer).Encode(a)
+	json.NewEncoder(writer).Encode(f)
 
 }
 
-func (api *API) GetArticleById(writer http.ResponseWriter, req *http.Request) {
+func (api *API) GetFilmById(writer http.ResponseWriter, req *http.Request) {
 	initHeader(writer)
-	api.logger.Info("Get Article by ID /api/v1/articles/{id}")
+	api.logger.Info("Get Film by ID /api/v1/films/{id}")
 	id, err := strconv.Atoi(mux.Vars(req)["id"])
 	if err != nil {
 		api.logger.Info("Trouble while parsing {id} patameter:", err)
@@ -93,7 +95,7 @@ func (api *API) GetArticleById(writer http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(writer).Encode(msg)
 		return
 	}
-	article, ok, err := api.storage.Article().FindArticleById(id)
+	film, ok, err := api.storage.Film().FindFilmById(id)
 	if err != nil {
 		api.logger.Info("Some trobles with acces to DB", err)
 		msg := Message{
@@ -106,10 +108,10 @@ func (api *API) GetArticleById(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if !ok {
-		api.logger.Info("Cannot find article ID in DB")
+		api.logger.Info("Cannot find film ID in DB")
 		msg := Message{
 			StatusCode: 404,
-			Message:    "Article with this ID doesn't exist",
+			Message:    "Film with this ID doesn't exist",
 			IsError:    true,
 		}
 		writer.WriteHeader(404)
@@ -117,12 +119,12 @@ func (api *API) GetArticleById(writer http.ResponseWriter, req *http.Request) {
 
 	}
 	writer.WriteHeader(200)
-	json.NewEncoder(writer).Encode(article)
+	json.NewEncoder(writer).Encode(film)
 
 }
-func (api *API) DeleteArticleById(writer http.ResponseWriter, req *http.Request) {
+func (api *API) DeleteFilmById(writer http.ResponseWriter, req *http.Request) {
 	initHeader(writer)
-	api.logger.Info("Delete by ID")
+	api.logger.Info("Delete film by ID")
 	id, err := strconv.Atoi(mux.Vars(req)["id"])
 	if err != nil {
 		api.logger.Info("Trouble while parsing {id} patameter:", err)
@@ -135,7 +137,7 @@ func (api *API) DeleteArticleById(writer http.ResponseWriter, req *http.Request)
 		json.NewEncoder(writer).Encode(msg)
 		return
 	}
-	_, ok, err := api.storage.Article().FindArticleById(id)
+	_, ok, err := api.storage.Film().FindFilmById(id)
 	if err != nil {
 		api.logger.Info("Some trobles with acces to DB", err)
 		msg := Message{
@@ -158,7 +160,7 @@ func (api *API) DeleteArticleById(writer http.ResponseWriter, req *http.Request)
 		json.NewEncoder(writer).Encode(msg)
 
 	}
-	_, err = api.storage.Article().DeleteById(id)
+	_, err = api.storage.Film().DeleteById(id)
 	if err != nil {
 		api.logger.Info("Some trobles with delete from DB", err)
 		msg := Message{
@@ -173,12 +175,67 @@ func (api *API) DeleteArticleById(writer http.ResponseWriter, req *http.Request)
 	writer.WriteHeader(202)
 	msg := Message{
 		StatusCode: 202,
-		Message:    fmt.Sprintf("Article with ID %d successfully deleted", id),
+		Message:    fmt.Sprintf("Film with ID %d successfully deleted", id),
 		IsError:    false,
 	}
 	json.NewEncoder(writer).Encode(msg)
 
 }
+
+func (api *API) PostActors(writer http.ResponseWriter, req *http.Request) {
+	initHeader(writer)
+	api.logger.Info("Post actor POST /api/v1/actors")
+	var actor models.Actor
+	err := json.NewDecoder(req.Body).Decode(&actor)
+	if err != nil {
+		api.logger.Info("Invalid JSON file recieved from client")
+		msg := Message{
+			StatusCode: 400,
+			Message:    "Provided JSON is invalid",
+			IsError:    true,
+		}
+		writer.WriteHeader(400)
+		json.NewEncoder(writer).Encode(msg)
+		return
+	}
+	a, err := api.storage.Actor().Create(&actor)
+	if err != nil {
+		api.logger.Info("Some error with creating new actor:", err)
+		msg := Message{
+			StatusCode: 500,
+			Message:    "We have some problem with database",
+			IsError:    true,
+		}
+		writer.WriteHeader(500)
+		json.NewEncoder(writer).Encode(msg)
+		return
+	}
+	writer.WriteHeader(201)
+	json.NewEncoder(writer).Encode(a)
+
+}
+func (api *API) GetAllActors(writer http.ResponseWriter, req *http.Request) {
+	//инилизация хедера
+	initHeader(writer)
+	//логируем момент начала обработки запроса
+	api.logger.Info("Get all Films GET /api/v1/actors")
+
+	actors, err := api.storage.Actor().SelectAll()
+	if err != nil {
+		api.logger.Info("Error while Actor.SelectAll:", err)
+		msg := Message{
+			StatusCode: 500,
+			Message:    "Database unavailible. Try again later",
+			IsError:    true,
+		}
+		writer.WriteHeader(500)
+		json.NewEncoder(writer).Encode(msg)
+		return
+	}
+	writer.WriteHeader(200)
+	json.NewEncoder(writer).Encode(actors)
+}
+
 func (api *API) PostUserRegister(writer http.ResponseWriter, req *http.Request) {
 	initHeader(writer)
 	api.logger.Info("Post User Register POST /api/v1/user/register")
@@ -235,6 +292,91 @@ func (api *API) PostUserRegister(writer http.ResponseWriter, req *http.Request) 
 	msg := Message{
 		StatusCode: 201,
 		Message:    fmt.Sprintf("User {login:%s} successfully registered!", userAdded.Login),
+		IsError:    false,
+	}
+	writer.WriteHeader(201)
+	json.NewEncoder(writer).Encode(msg)
+
+}
+
+func (api *API) PostToAuth(writer http.ResponseWriter, req *http.Request) {
+	initHeader(writer)
+	api.logger.Info("Post to Auth POST /api/v1/user/auth")
+	var userFromJson models.User
+	err := json.NewDecoder(req.Body).Decode(&userFromJson)
+	//если невалидный json
+	if err != nil {
+		api.logger.Info("Invalid JSON file recieved from client")
+		msg := Message{
+			StatusCode: 400,
+			Message:    "Provided JSON is invalid",
+			IsError:    true,
+		}
+		writer.WriteHeader(400)
+		json.NewEncoder(writer).Encode(msg)
+		return
+	}
+	//проверка на существование юзера
+	userInDb, ok, err := api.storage.User().FindByLogin(userFromJson.Login)
+	if err != nil {
+		api.logger.Info("Can't make user search in database:", err)
+		msg := Message{
+			StatusCode: 500,
+			Message:    "We have some troubles while accessing database",
+			IsError:    true,
+		}
+		writer.WriteHeader(500)
+		json.NewEncoder(writer).Encode(msg)
+		return
+	}
+
+	//нет юзера в БД
+	if !ok {
+		api.logger.Info("User with ID doesn't exists")
+		msg := Message{
+			StatusCode: 400,
+			Message:    "User with ID doesn't exists exists. Try register first",
+			IsError:    true,
+		}
+		writer.WriteHeader(400)
+		json.NewEncoder(writer).Encode(msg)
+		return
+	}
+
+	//проверка пароля из запроса в БД
+	if userInDb.Password != userFromJson.Password {
+		api.logger.Info("Invalid credentials to auth")
+		msg := Message{
+			StatusCode: 404,
+			Message:    "Your password is invalid",
+			IsError:    true,
+		}
+		writer.WriteHeader(404)
+		json.NewEncoder(writer).Encode(msg)
+
+	}
+
+	//токен
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["exp"] = time.Now().Add(time.Hour * 2).Unix()
+	claims["admin"] = true
+	claims["name"] = userInDb
+
+	tokenString, err := token.SignedString(middleware.SecretKey)
+	if err != nil {
+		api.logger.Info("Can't claim jwt-token")
+		msg := Message{
+			StatusCode: 500,
+			Message:    "We hava some troubles. Try later",
+			IsError:    true,
+		}
+		writer.WriteHeader(500)
+		json.NewEncoder(writer).Encode(msg)
+	}
+	msg := Message{
+		StatusCode: 201,
+		Message:    tokenString,
 		IsError:    false,
 	}
 	writer.WriteHeader(201)

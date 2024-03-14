@@ -1,2 +1,3 @@
 DROP TABLE users;
-DROP TABLE articles;
+DROP TABLE films;
+DROP TABLE actors;
