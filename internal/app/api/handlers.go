@@ -406,3 +406,63 @@ func (api *API) PostToAuth(writer http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(writer).Encode(msg)
 
 }
+
+func (api *API) DeleteActorById(writer http.ResponseWriter, req *http.Request) {
+	initHeader(writer)
+	api.logger.Info("Delete film by ID")
+	id, err := strconv.Atoi(mux.Vars(req)["id"])
+	if err != nil {
+		api.logger.Info("Trouble while parsing {id} patameter:", err)
+		msg := Message{
+			StatusCode: 400,
+			Message:    "ID invalid",
+			IsError:    true,
+		}
+		writer.WriteHeader(400)
+		json.NewEncoder(writer).Encode(msg)
+		return
+	}
+	_, ok, err := api.storage.Actor().FindActorById(id)
+	if err != nil {
+		api.logger.Info("Some trobles with acces to DB", err)
+		msg := Message{
+			StatusCode: 500,
+			Message:    "We don't have access to DB, sorry",
+			IsError:    true,
+		}
+		writer.WriteHeader(500)
+		json.NewEncoder(writer).Encode(msg)
+		return
+	}
+	if !ok {
+		api.logger.Info("Cannot find actor ID in DB")
+		msg := Message{
+			StatusCode: 404,
+			Message:    "Actor with this ID doesn't exist",
+			IsError:    true,
+		}
+		writer.WriteHeader(404)
+		json.NewEncoder(writer).Encode(msg)
+
+	}
+	_, err = api.storage.Actor().DeleteById(id)
+	if err != nil {
+		api.logger.Info("Some trobles with delete from DB", err)
+		msg := Message{
+			StatusCode: 501,
+			Message:    "We don't have access to DB, sorry",
+			IsError:    true,
+		}
+		writer.WriteHeader(501)
+		json.NewEncoder(writer).Encode(msg)
+		return
+	}
+	writer.WriteHeader(202)
+	msg := Message{
+		StatusCode: 202,
+		Message:    fmt.Sprintf("Actor with ID %d successfully deleted", id),
+		IsError:    false,
+	}
+	json.NewEncoder(writer).Encode(msg)
+
+}
