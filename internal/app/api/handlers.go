@@ -237,27 +237,27 @@ func (api *API) PostActors(writer http.ResponseWriter, req *http.Request) {
 
 }
 
-// func (api *API) GetAllActors(writer http.ResponseWriter, req *http.Request) {
-// 	//инилизация хедера
-// 	initHeader(writer)
-// 	//логируем момент начала обработки запроса
-// 	api.logger.Info("Get all Films GET /api/v1/actors")
+func (api *API) GetAllActors(writer http.ResponseWriter, req *http.Request) {
+	//инилизация хедера
+	initHeader(writer)
+	//логируем момент начала обработки запроса
+	api.logger.Info("Get all Films GET /api/v1/actors")
 
-// 	actors, err := api.storage.Actor().SelectAll()
-// 	if err != nil {
-// 		api.logger.Info("Error while Actor.SelectAll:", err)
-// 		msg := Message{
-// 			StatusCode: 500,
-// 			Message:    "Database unavailible. Try again later",
-// 			IsError:    true,
-// 		}
-// 		writer.WriteHeader(500)
-// 		json.NewEncoder(writer).Encode(msg)
-// 		return
-// 	}
-// 	writer.WriteHeader(200)
-// 	json.NewEncoder(writer).Encode(actors)
-// }
+	actors, err := api.storage.Actor().SelectAll()
+	if err != nil {
+		api.logger.Info("Error while Actor.SelectAll:", err)
+		msg := Message{
+			StatusCode: 500,
+			Message:    "Database unavailible. Try again later",
+			IsError:    true,
+		}
+		writer.WriteHeader(500)
+		json.NewEncoder(writer).Encode(msg)
+		return
+	}
+	writer.WriteHeader(200)
+	json.NewEncoder(writer).Encode(actors)
+}
 
 func (api *API) PostUserRegister(writer http.ResponseWriter, req *http.Request) {
 	initHeader(writer)

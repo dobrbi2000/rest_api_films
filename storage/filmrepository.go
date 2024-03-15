@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 
@@ -12,9 +13,17 @@ type FilmRepository struct {
 }
 
 func (fi *FilmRepository) Create(film *models.Film, actors []*models.Actor) (*models.Film, []*models.Actor, error) {
+	//проверка на существование
+	checkQuery := fmt.Sprintf("SELECT film_id FROM %s WHERE title = $1 AND year = $2", tableFilms)
+	var existingFilmID int
+	err := fi.storage.db.QueryRow(checkQuery, film.Title, film.Year).Scan(&existingFilmID)
+	if err == nil {
+		return nil, nil, fmt.Errorf("Film '%s' already exists", film.Title)
+	}
+
 	//создание фильма
 	filmQuery := fmt.Sprintf("INSERT INTO %s (title, description, year, rating) VALUES ($1, $2, $3, $4) RETURNING film_id", tableFilms)
-	err := fi.storage.db.QueryRow(filmQuery, film.Title, film.Description, film.Year, film.Rating).Scan(&film.FilmID)
+	err = fi.storage.db.QueryRow(filmQuery, film.Title, film.Description, film.Year, film.Rating).Scan(&film.FilmID)
 	fmt.Println("filmQuery", filmQuery)
 	fmt.Println("filmError", err)
 	if err != nil {
@@ -22,13 +31,20 @@ func (fi *FilmRepository) Create(film *models.Film, actors []*models.Actor) (*mo
 	}
 	//создание актеров
 	for _, actor := range actors {
-		actorQuery := fmt.Sprintf("INSERT INTO %s (name, gender, birth_date) VALUES ($1, $2, $3) RETURNING actor_id", tableActors)
-		fmt.Println("actorError", err)
-		fmt.Println("actorQuery", actorQuery)
-		err := fi.storage.db.QueryRow(actorQuery, actor.Name, actor.Gender, actor.BirthDate).Scan(&actor.ActorID)
-		if err != nil {
-			return nil, nil, err
+		var actorID int
+		checkActorQuery := fmt.Sprintf("SELECT actor_id FROM %s WHERE name = $1 AND gender = $2 AND birth_date = $3", tableActors)
+		err := fi.storage.db.QueryRow(checkActorQuery, actor.Name, actor.Gender, actor.BirthDate).Scan(&actorID)
+		if err == sql.ErrNoRows {
+			actorQuery := fmt.Sprintf("INSERT INTO %s (name, gender, birth_date) VALUES ($1, $2, $3) RETURNING actor_id", tableActors)
+			err = fi.storage.db.QueryRow(actorQuery, actor.Name, actor.Gender, actor.BirthDate).Scan(&actor.ActorID)
+			if err != nil {
+				return nil, nil, err
+			}
 		}
+
+		// fmt.Println("actorError", err)
+		// fmt.Println("actorQuery", actorQuery)
+
 		filmActorQuery := fmt.Sprintf("INSERT INTO %s (film_id, actor_id) VALUES ($1, $2)", tableFilmActor)
 		fmt.Println("filmError", err)
 		fmt.Println("filmActorQuery", filmActorQuery)
@@ -47,7 +63,7 @@ func (fi *FilmRepository) DeleteById(id int) (*models.Film, error) {
 		return nil, err
 	}
 	if ok {
-		query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", tableFilms)
+		query := fmt.Sprintf("DELETE FROM %s WHERE film_id=$1", tableFilms)
 		_, err := fi.storage.db.Exec(query, id)
 		if err != nil {
 			return nil, err
