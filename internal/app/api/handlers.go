@@ -50,10 +50,20 @@ func (api *API) GetAllFilms(writer http.ResponseWriter, req *http.Request) {
 func (api *API) PostFilms(writer http.ResponseWriter, req *http.Request) {
 	initHeader(writer)
 	api.logger.Info("Post film POST /api/v1/films")
-	var film models.Film
-	err := json.NewDecoder(req.Body).Decode(&film)
+
+	var requestData struct {
+		Film   models.Film     `json:"film"`
+		Actors []*models.Actor `json:"actors"`
+	}
+
+	err := json.NewDecoder(req.Body).Decode(&requestData)
+	fmt.Println("Request", req.Body)
+	fmt.Println("Film:", requestData.Film)
+	fmt.Println("Actors", requestData.Actors)
+	defer req.Body.Close()
+
 	if err != nil {
-		api.logger.Info("Invalid JSON file recieved from client")
+		api.logger.Info("Invalid JSON file recieved from client for film")
 		msg := Message{
 			StatusCode: 400,
 			Message:    "Provided JSON is invalid",
@@ -63,20 +73,32 @@ func (api *API) PostFilms(writer http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(writer).Encode(msg)
 		return
 	}
-	f, err := api.storage.Film().Create(&film)
+	film, actors := requestData.Film, requestData.Actors
+
+	f, a, err := api.storage.Film().Create(&film, actors)
+	fmt.Println("FilmCreate:", &film)
+	fmt.Println("ActorsCreate", actors)
 	if err != nil {
 		api.logger.Info("Some error with creating new film:", err)
 		msg := Message{
 			StatusCode: 500,
-			Message:    "We have some problem with database",
+			Message:    "We have some problem with the database",
 			IsError:    true,
 		}
 		writer.WriteHeader(500)
 		json.NewEncoder(writer).Encode(msg)
 		return
 	}
+	data := struct {
+		Film   models.Film
+		Actors []*models.Actor
+	}{
+		Film:   *f,
+		Actors: a,
+	}
+
 	writer.WriteHeader(201)
-	json.NewEncoder(writer).Encode(f)
+	json.NewEncoder(writer).Encode(data)
 
 }
 
@@ -214,27 +236,28 @@ func (api *API) PostActors(writer http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(writer).Encode(a)
 
 }
-func (api *API) GetAllActors(writer http.ResponseWriter, req *http.Request) {
-	//инилизация хедера
-	initHeader(writer)
-	//логируем момент начала обработки запроса
-	api.logger.Info("Get all Films GET /api/v1/actors")
 
-	actors, err := api.storage.Actor().SelectAll()
-	if err != nil {
-		api.logger.Info("Error while Actor.SelectAll:", err)
-		msg := Message{
-			StatusCode: 500,
-			Message:    "Database unavailible. Try again later",
-			IsError:    true,
-		}
-		writer.WriteHeader(500)
-		json.NewEncoder(writer).Encode(msg)
-		return
-	}
-	writer.WriteHeader(200)
-	json.NewEncoder(writer).Encode(actors)
-}
+// func (api *API) GetAllActors(writer http.ResponseWriter, req *http.Request) {
+// 	//инилизация хедера
+// 	initHeader(writer)
+// 	//логируем момент начала обработки запроса
+// 	api.logger.Info("Get all Films GET /api/v1/actors")
+
+// 	actors, err := api.storage.Actor().SelectAll()
+// 	if err != nil {
+// 		api.logger.Info("Error while Actor.SelectAll:", err)
+// 		msg := Message{
+// 			StatusCode: 500,
+// 			Message:    "Database unavailible. Try again later",
+// 			IsError:    true,
+// 		}
+// 		writer.WriteHeader(500)
+// 		json.NewEncoder(writer).Encode(msg)
+// 		return
+// 	}
+// 	writer.WriteHeader(200)
+// 	json.NewEncoder(writer).Encode(actors)
+// }
 
 func (api *API) PostUserRegister(writer http.ResponseWriter, req *http.Request) {
 	initHeader(writer)

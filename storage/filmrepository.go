@@ -11,20 +11,34 @@ type FilmRepository struct {
 	storage *Storage
 }
 
-func (fi *FilmRepository) Create(a *models.Film) (*models.Film, error) {
-	filmQuery := fmt.Sprintf("INSERT INTO %s (title, description, year, rating, actors ) VALUES ($1, $2, $3, $4) RETURNING id", tableFilms)
-	if err := fi.storage.db.QueryRow(filmQuery, a.Title, a.Description, a.Year, a.Rating).Scan(&a.ID); err != nil {
-		return nil, err
+func (fi *FilmRepository) Create(film *models.Film, actors []*models.Actor) (*models.Film, []*models.Actor, error) {
+	//создание фильма
+	filmQuery := fmt.Sprintf("INSERT INTO %s (title, description, year, rating) VALUES ($1, $2, $3, $4) RETURNING film_id", tableFilms)
+	err := fi.storage.db.QueryRow(filmQuery, film.Title, film.Description, film.Year, film.Rating).Scan(&film.FilmID)
+	fmt.Println("filmQuery", filmQuery)
+	fmt.Println("filmError", err)
+	if err != nil {
+		return nil, nil, err
 	}
-	//Create actors
-	for _, actor := range a.Actors {
-		actorQuery := fmt.Sprintf("INSERT INTO %s (name, gender, birth_date) VALUES ($1, $2, $3) RETURNING id", tableActors)
-		if err := fi.storage.db.QueryRow(actorQuery, actor.Name, actor.Gender, actor.BirthDate).Scan(&actor.ID); err != nil {
-			return nil, err
+	//создание актеров
+	for _, actor := range actors {
+		actorQuery := fmt.Sprintf("INSERT INTO %s (name, gender, birth_date) VALUES ($1, $2, $3) RETURNING actor_id", tableActors)
+		fmt.Println("actorError", err)
+		fmt.Println("actorQuery", actorQuery)
+		err := fi.storage.db.QueryRow(actorQuery, actor.Name, actor.Gender, actor.BirthDate).Scan(&actor.ActorID)
+		if err != nil {
+			return nil, nil, err
+		}
+		filmActorQuery := fmt.Sprintf("INSERT INTO %s (film_id, actor_id) VALUES ($1, $2)", tableFilmActor)
+		fmt.Println("filmError", err)
+		fmt.Println("filmActorQuery", filmActorQuery)
+		_, err = fi.storage.db.Exec(filmActorQuery, film.FilmID, actor.ActorID)
+		if err != nil {
+			return nil, nil, err
 		}
 	}
 
-	return a, nil
+	return film, actors, nil
 }
 
 func (fi *FilmRepository) DeleteById(id int) (*models.Film, error) {
@@ -51,7 +65,7 @@ func (fi *FilmRepository) FindFilmById(id int) (*models.Film, bool, error) {
 	}
 	var filmFinded *models.Film
 	for _, f := range film {
-		if f.ID == id {
+		if f.FilmID == id {
 			filmFinded = f
 			founded = true
 			break
@@ -72,7 +86,7 @@ func (fi *FilmRepository) SelectAll() ([]*models.Film, error) {
 	films := make([]*models.Film, 0)
 	for rows.Next() {
 		f := models.Film{}
-		err := rows.Scan(&f.ID, &f.Title, &f.Description, &f.Year, &f.Rating, &f.Actors)
+		err := rows.Scan(&f.FilmID, &f.Title, &f.Description, &f.Year, &f.Rating)
 		if err != nil {
 			log.Println(err)
 			continue

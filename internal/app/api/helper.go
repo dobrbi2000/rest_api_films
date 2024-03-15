@@ -38,7 +38,7 @@ func (a *API) configireRouterField() {
 	a.router.HandleFunc(prefix+"/films", a.PostFilms).Methods("POST")
 
 	a.router.HandleFunc(prefix+"/actors", a.PostActors).Methods("POST")
-	a.router.HandleFunc(prefix+"/actors", a.GetAllActors).Methods("GET")
+	//a.router.HandleFunc(prefix+"/actors", a.GetAllActors).Methods("GET")
 	a.router.HandleFunc(prefix+"/user/register", a.PostUserRegister).Methods("POST")
 	//конфиг для auth
 	a.router.HandleFunc(prefix+"/user/auth", a.PostToAuth).Methods("POST")

@@ -50,6 +50,7 @@ func (s *Storage) User() *UserRepository {
 	s.userRepository = &UserRepository{
 		storage: s,
 	}
+	fmt.Println("initialize user storage:", s)
 	return s.userRepository
 }
 
@@ -60,7 +61,7 @@ func (s *Storage) Actor() *ActorRepository {
 	s.actorRepository = &ActorRepository{
 		storage: s,
 	}
-	fmt.Println("initialize article storage:", s)
+	fmt.Println("initialize actor storage:", s)
 	return s.actorRepository
 }
 
@@ -71,6 +72,6 @@ func (s *Storage) Film() *FilmRepository {
 	s.filmRepository = &FilmRepository{
 		storage: s,
 	}
-	fmt.Println("initialize article storage:", s)
+	fmt.Println("initialize film storage:", s)
 	return s.filmRepository
 }
