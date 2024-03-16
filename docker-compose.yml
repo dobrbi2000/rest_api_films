@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: restapi
+    ports:
+      - "5432:5432"
+  
+  rest-api:
+    build: .
+    container_name: rest_api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=host=db port=5432 user=admin password=admin dbname=restapi sslmode=disable
