@@ -17,7 +17,7 @@ WORKDIR /app
 
 COPY --from=builder /app/app .
 
-COPY ./configs/api.toml /app/configs/api.toml
-COPY ./configs/.env /app/configs/.env
+COPY ./configs/api.toml ./configs/api.toml
+COPY ./configs/.env ./configs/.env
 
 CMD ["./app"]
