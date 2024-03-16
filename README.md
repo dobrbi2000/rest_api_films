@@ -197,7 +197,7 @@ POST http://localhost:8080/api/v1/user/register
 Docker и docker compose сгенерированы  
 Коллекция запросов сохранена в корне  
 
-![]: https://prnt.sc/V44QG4M9-sMA
+![docker](https://prnt.sc/V44QG4M9-sMA)
 
 Из минусов:
 тестами не покрыто, документация в свагер не описана
