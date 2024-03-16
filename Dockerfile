@@ -8,15 +8,14 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o app ./cmd/api/main.go  
+RUN go build -o app ./cmd/api/main.go
 
 # Стадия production
 FROM alpine:latest
 
 WORKDIR /app
 
-COPY ./configs/api.toml ./configs/api.toml
-
-COPY --from=builder /app/app .
+COPY ./configs/api.toml /app/configs/api.toml
+COPY --from=builder /app/app /app/app
 
 CMD ["./app"]
