@@ -10,6 +10,8 @@ services:
       POSTGRES_DB: restapi
     ports:
       - "5432:5432"
+    volumes:
+      - ./configs:/app/configs
   
   rest-api:
     build: .
