@@ -16,6 +16,6 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY ./configs/api.toml /app/configs/api.toml
-COPY --from=builder /app/app /app/app
+COPY --from=builder /app/app .
 
 CMD ["./app"]
