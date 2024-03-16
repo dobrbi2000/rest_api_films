@@ -3,4 +3,4 @@ bind_addr = ":8080"
 logger_level = "debug"
 
 [storage]
-database_url = "host=db port=25432 user=admin password=admin dbname=restapi sslmode=disable"
+database_url = "host=db port=5432 user=admin password=admin dbname=restapi sslmode=disable"

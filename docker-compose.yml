@@ -1,18 +1,22 @@
 version: '3.8'
 
 services:
-  rest-api:
-    image: rest-api-films
-    container_name: rest_api
-    depends_on:
-      - db
-
   db:
-    image: postgres:16-alpine
+    image: postgres
     container_name: postgres_db
-    ports:
-      - "25432:5432"
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: restapi
+    ports:
+      - "5432:5432"
+  
+  rest-api:
+    build: .
+    container_name: rest_api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=host=db port=5432 user=admin password=admin dbname=restapi sslmode=disable
