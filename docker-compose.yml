@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: restapi
     ports:
-      - "5432:5432"
+      - "5436:5432"
   
   rest-api:
     build: .
@@ -19,4 +19,4 @@ services:
     depends_on:
       - db
     environment:
-      - DATABASE_URL=host=localhost port=5432 user=admin password=admin dbname=restapi sslmode=disable
+      - DATABASE_URL=host=db port=5436 user=admin password=admin dbname=restapi sslmode=disable
