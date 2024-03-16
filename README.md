@@ -196,8 +196,9 @@ POST http://localhost:8080/api/v1/user/register
 БД postgresql с настроенной миграцией внутри докера  
 Docker и docker compose сгенерированы  
 Коллекция запросов сохранена в корне  
+На основные события добавлены логи и сообщение при ошибках
 
-![docker](https://prnt.sc/V44QG4M9-sMA)
+![docker](https://img001.prntscr.com/file/img001/15V-7V6IT_W5tBEyQb6MWg.png)
 
 Из минусов:
 тестами не покрыто, документация в свагер не описана
