@@ -16,7 +16,6 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY ./configs/api.toml ./configs/api.toml
-COPY ./configs/.env ./configs/.env
 
 COPY --from=builder /app/app .
 
