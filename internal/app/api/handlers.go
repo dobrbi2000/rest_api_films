@@ -172,10 +172,10 @@ func (api *API) DeleteFilmById(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if !ok {
-		api.logger.Info("Cannot find article ID in DB")
+		api.logger.Info("Cannot find film ID in DB")
 		msg := Message{
 			StatusCode: 404,
-			Message:    "Article with this ID doesn't exist",
+			Message:    "Film with this ID doesn't exist",
 			IsError:    true,
 		}
 		writer.WriteHeader(404)
