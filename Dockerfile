@@ -1,4 +1,3 @@
-# Стадия сборки
 FROM golang:1.22-alpine as builder
 
 WORKDIR /app
@@ -10,12 +9,10 @@ COPY . .
 
 RUN go build -o app ./cmd/api/main.go
 
-# Стадия production
 FROM alpine:latest
 
-WORKDIR /app
 
+COPY --from=builder /app/app /
 COPY ./configs/api.toml /app/configs/api.toml
-COPY --from=builder /app/app .
 
 CMD ["./app"]
